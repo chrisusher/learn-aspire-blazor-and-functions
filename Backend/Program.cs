@@ -15,7 +15,7 @@ var config = new ConfigurationBuilder()
 .AddEnvironmentVariables().Build();
 
 var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults(worker =>
+    .ConfigureFunctionsWebApplication(worker =>
     {
         var options = new JsonSerializerOptions
         {
@@ -23,7 +23,7 @@ var host = new HostBuilder()
             WriteIndented = true,
         };
 
-        worker.Serializer = new JsonObjectSerializer(options);
+        // worker.Serializer = new JsonObjectSerializer(options);
     })
     .ConfigureOpenApi()
     .ConfigureServices(services =>
