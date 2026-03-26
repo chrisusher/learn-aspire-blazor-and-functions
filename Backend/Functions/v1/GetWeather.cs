@@ -1,31 +1,44 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
+using System.Net;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace Backend.Functions.v1;
 
-public static class GetWeather
+public sealed class GetWeather
 {
-    [FunctionName("GetWeather")]
-    public static async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-        ILogger log)
+    private static readonly string[] Summaries =
+    [
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    ];
+
+    private readonly ILogger<GetWeather> _logger;
+
+    public GetWeather(ILogger<GetWeather> logger)
     {
-        log.LogInformation("C# HTTP trigger function processed a request.");
+        _logger = logger;
+    }
 
-        string name = req.Query["name"];
+    [Function("GetWeather")]
+    public async Task<HttpResponseData> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "weather")] HttpRequestData req)
+    {
+        _logger.LogInformation("GetWeather HTTP trigger processed a request.");
 
-        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-        dynamic data = JsonConvert.DeserializeObject(requestBody);
-        name = name ?? data?.name;
+        var forecast = Enumerable.Range(1, 5)
+            .Select(index => new WeatherForecast(
+                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(index)),
+                Random.Shared.Next(-20, 55),
+                Summaries[Random.Shared.Next(Summaries.Length)]))
+            .ToArray();
 
-        string responseMessage = string.IsNullOrEmpty(name)
-            ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-            : $"Hello, {name}. This HTTP triggered function executed successfully.";
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        await response.WriteAsJsonAsync(forecast);
+        return response;
+    }
 
-        return new OkObjectResult(responseMessage);
+    public sealed record WeatherForecast(DateOnly Date, int TemperatureC, string Summary)
+    {
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
     }
 }

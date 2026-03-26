@@ -6,7 +6,6 @@
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-
 var api = builder.AddAzureFunctionsProject<Projects.Backend>("api")
     .WithExternalHttpEndpoints();
 
