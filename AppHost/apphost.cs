@@ -3,7 +3,7 @@
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Projects.UI>("webfrontend")
+builder.AddProject<Projects.UI>("web")
     .WithExternalHttpEndpoints();
 
 builder.Build().Run();
