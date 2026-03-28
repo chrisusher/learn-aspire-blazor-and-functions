@@ -1,17 +1,35 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
+using Microsoft.Azure.Functions.Worker.Middleware;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 var host = new HostBuilder()
-	.ConfigureFunctionsWebApplication()
+	.ConfigureFunctionsWebApplication(app =>
+	{
+		app.Use(next => new FunctionExecutionDelegate(async context =>
+		{
+			var httpContext = context.GetHttpContext();
+			if (httpContext is not null)
+			{
+				httpContext.Response.Headers["Access-Control-Allow-Origin"] = "*";
+				httpContext.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+				httpContext.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS";
+
+				if (httpContext.Request.Method == "OPTIONS")
+				{
+					httpContext.Response.StatusCode = 200;
+					return;
+				}
+			}
+
+			await next(context);
+		}));
+	})
 	.ConfigureOpenApi()
 	.ConfigureServices(services =>
 	{
-		// Add Application Insights telemetry for Azure Functions (isolated worker model).
-		services.ConfigureFunctionsApplicationInsights();
-		services.AddApplicationInsightsTelemetryWorkerService();
 
 		// Configure logging to suppress Azure Storage noise
 		services.Configure<LoggerFilterOptions>(options =>
