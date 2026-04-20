@@ -1,3 +1,4 @@
+using Backend.Database;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
 using Microsoft.Azure.Functions.Worker.Middleware;
@@ -45,6 +46,8 @@ var host = new HostBuilder()
 
 		// Add HttpClient for Clerk token validation
 		services.AddHttpClient();
+
+		// services.AddCosmosDbContext<MyDbContext>("cosmos-db");
 	})
 	.Build();
 

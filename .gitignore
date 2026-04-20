@@ -419,3 +419,6 @@ FodyWeavers.xsd
 
 # Azure Functions localsettings file
 local.settings.json
+
+# CS Dev Kit for Visual Studio Code
+*.lscache
