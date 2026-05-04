@@ -30,7 +30,6 @@ var host = new HostBuilder()
 	.ConfigureOpenApi()
 	.ConfigureServices(services =>
 	{
-
 		// Configure logging to suppress Azure Storage noise
 		services.Configure<LoggerFilterOptions>(options =>
 		{
