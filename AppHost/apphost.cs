@@ -1,12 +1,21 @@
-#:sdk Aspire.AppHost.Sdk@13.2.0
-#:package Aspire.Hosting.Azure.Functions@*
-#:package Aspire.Hosting.Azure.Storage@*
+﻿#:sdk Aspire.AppHost.Sdk@13.2.4
+#:package Aspire.Hosting.Azure.Functions@13.2.4
+#:package Aspire.Hosting.Azure.Storage@13.2.4
 #:project ../Backend/Backend.csproj
 #:project ../UI/UI.csproj
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var api = builder.AddAzureFunctionsProject<Projects.Backend>("api")
+var storage = builder.AddAzureStorage("storage")
+    .RunAsEmulator(azurite =>
+    {
+        azurite.WithDataVolume("data");
+    });
+
+var api = builder.AddAzureFunctionsProject("api", "../Backend/Backend.csproj")
+    .WaitFor(storage)
+    .WithArgs("--verbose", "--script-root", @"..\..\..")
+    .WithHostStorage(storage)
     .WithExternalHttpEndpoints();
 
 builder.AddProject<Projects.UI>("web")
