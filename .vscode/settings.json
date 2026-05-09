@@ -1,5 +1,13 @@
 {
+    "azureFunctions.deploySubpath": "Functions/bin/Release/net10.0/publish",
+    "azureFunctions.projectLanguage": "C#",
+    "azureFunctions.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.preDeployTask": "publish (functions)",
     "chat.tools.terminal.autoApprove": {
-        "aspire": true
+        "/^aspire start$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }
